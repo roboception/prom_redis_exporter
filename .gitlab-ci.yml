@@ -1,0 +1,107 @@
+before_script:
+  - export DISTRO_CODENAME=`lsb_release -cs` && echo Using distro $DISTRO_CODENAME
+  - apt-get update -yq && apt-get install -y python-pip
+
+variables:
+  GET_SOURCES_ATTEMPTS: 3
+
+stages:
+  - test
+  - image
+
+#############
+# Job anchors
+#############
+
+.amd64_xenial_t: &amd64_xenial_job
+  image: ros:kinetic-ros-core
+  tags:
+    - amd64
+    - docker
+
+.armhf_xenial_t: &armhf_xenial_job
+  image: registry.roboception.de/tools/docker_images:armhf-kinetic-ros-core
+  tags:
+    - armhf
+    - docker
+
+.amd64_bionic_t: &amd64_bionic_job
+  image: ros:melodic-ros-core
+  tags:
+    - amd64
+    - docker
+
+#############
+# Templates
+#############
+.test:
+  stage: test
+  script:
+    - pip install -r requirements.txt
+    - pip install pytest
+    - pytest
+
+# Docker image
+.docker_build:
+  image: docker:latest
+  stage: image
+  variables:
+    ROS_DISTRO: "kinetic"
+    RC_REPO: testing
+  before_script:
+    - docker info
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - if [ -z "$IMAGE" ]; then export IMAGE=$CI_REGISTRY_IMAGE/$ROS_DISTRO ; fi
+    - if [ -n "$CI_COMMIT_TAG" ]; then export IMAGE_TAG=$CI_COMMIT_TAG ; else export IMAGE_TAG=$CI_COMMIT_REF_SLUG ; fi
+    - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then export IMAGE_TAG=testing ; fi
+    - if [ -z "$DOCKER_BUILD_FLAGS" ]; then export DOCKER_BUILD_FLAGS="--pull --no-cache --build-arg RC_REPO=$RC_REPO --build-arg ROS_DISTRO=$ROS_DISTRO"; fi
+    - if [ -z "$DOCKERFILE_DIR" ]; then export DOCKERFILE_DIR=.; fi
+  script:
+    - echo "building docker image $IMAGE:$IMAGE_TAG with flags $DOCKER_BUILD_FLAGS"
+    - docker build $DOCKER_BUILD_FLAGS -t $IMAGE:$IMAGE_TAG $DOCKERFILE_DIR
+    - docker push $IMAGE:$IMAGE_TAG
+    - if [ -n "$CI_COMMIT_TAG" ]; then docker tag $IMAGE:$IMAGE_TAG $IMAGE:latest; docker push $IMAGE:latest; docker rmi $IMAGE:latest; fi
+    - docker rmi $IMAGE:$IMAGE_TAG || true
+  tags:
+    - docker-build
+  except:
+    - tags
+
+.docker_build_stable:
+  extends: .docker_build
+  variables:
+    RC_REPO: stable
+  only:
+    - /^v[0-9]+\.[0-9]+\.[0-9]+/
+  except:
+    - branches
+    - schedules
+
+##############
+# Jobs
+##############
+#test_amd64:
+#  <<: *amd64_xenial_job
+#  <<: *test
+
+# Build and push as docker image
+################################
+image_testing:kinetic:
+  extends: .docker_build
+  variables:
+    ROS_DISTRO: "kinetic"
+
+image_testing:melodic:
+  extends: .docker_build
+  variables:
+    ROS_DISTRO: "melodic"
+
+image_stable:kinetic:
+  extends: .docker_build_stable
+  variables:
+    ROS_DISTRO: "kinetic"
+
+image_stable:melodic:
+  extends: .docker_build_stable
+  variables:
+    ROS_DISTRO: "melodic"

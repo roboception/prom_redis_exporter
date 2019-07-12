@@ -1,0 +1,27 @@
+#
+# This is the config file for the prom-redis-exporter.py
+# It makes makes redis queries available as metrics available to prometheus
+#
+
+prometheus_redis:
+    server:
+        port: 9118 # defaults to 9118 (may change in the future)
+
+    connections:
+        redis1:
+            host: redis    # defaults to localhost
+
+    metrics:
+        node_web_video_server_status:
+            description: Status
+            connection: redis1 # this is optional if only one connection is defined above
+            query: HGET node:web_video_server status
+
+        node_pick_sensor_itempick_data_acquisition_time:
+            description: Pick sensor Itempick data aquisition time in seconds
+            query: HGET node:pick_sensor/offboard/rc_itempick:values:values data_acquisition_time
+
+        node_pick_sensor_itempick_grasp_computation_time:
+            description: Pick sensor Itempick grasp computation time in seconds
+            query: HGET node:pick_sensor/offboard/rc_itempick:values:values grasp_computation_time
+
