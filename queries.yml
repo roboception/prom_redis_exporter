@@ -9,19 +9,120 @@ prometheus_redis:
 
     connections:
         redis1:
-            host: redis    # defaults to localhost
+            host: localhost    # defaults to localhost
 
     metrics:
-        node_web_video_server_status:
-            description: Status
-            connection: redis1 # this is optional if only one connection is defined above
-            query: HGET node:web_video_server status
+        node_pick_sensor_rc_visard_driver_connection_loss_total:
+            description: Pick sensor rc_visard_driver number of connections losses
+            query: HGET node:node:pick_sensor/rc_visard_driver__Connection:values connection_loss_total
+            type: counter
+
+        node_pick_sensor_rc_visard_driver_incomplete_buffers_total:
+            description: Pick sensor rc_visard_driver number of incomplete buffers
+            query: HGET node:node:pick_sensor/rc_visard_driver__Connection:values incomplete_buffers_total
+            type: counter
+
+        node_pick_sensor_rc_visard_driver_image_receive_timeouts_total:
+            description: Pick sensor rc_visard_driver number of image receive timeouts
+            query: HGET node:node:pick_sensor/rc_visard_driver__Connection:values image_receive_timeouts_total
+            type: counter
+
+
+        node_place_sensor_rc_visard_driver_connection_loss_total:
+            description: place sensor rc_visard_driver number of connections losses
+            query: HGET node:node:place_sensor/rc_visard_driver__Connection:values connection_loss_total
+            type: counter
+
+        node_place_sensor_rc_visard_driver_incomplete_buffers_total:
+            description: place sensor rc_visard_driver number of incomplete buffers
+            query: HGET node:node:place_sensor/rc_visard_driver__Connection:values incomplete_buffers_total
+            type: counter
+
+        node_place_sensor_rc_visard_driver_image_receive_timeouts_total:
+            description: place sensor rc_visard_driver number of image receive timeouts
+            query: HGET node:node:place_sensor/rc_visard_driver__Connection:values image_receive_timeouts_total
+            type: counter
+
+
+        node_orientation_sensor_rc_visard_driver_connection_loss_total:
+            description: orientation sensor rc_visard_driver number of connections losses
+            query: HGET node:node:orientation_sensor/rc_visard_driver__Connection:values connection_loss_total
+            type: counter
+
+        node_orientation_sensor_rc_visard_driver_incomplete_buffers_total:
+            description: orientation sensor rc_visard_driver number of incomplete buffers
+            query: HGET node:node:orientation_sensor/rc_visard_driver__Connection:values incomplete_buffers_total
+            type: counter
+
+        node_orientation_sensor_rc_visard_driver_image_receive_timeouts_total:
+            description: orientation sensor rc_visard_driver number of image receive timeouts
+            query: HGET node:node:orientation_sensor/rc_visard_driver__Connection:values image_receive_timeouts_total
+            type: counter
+
+
+        node_rc_synq_client_uploads_successful:
+            description: Number of successful uploads to SynQ
+            query: HGET node:rc_synq_client:values uploads_successful
+            type: counter
+
+        node_rc_synq_client_uploads_failed:
+            description: Number of failed uploads to SynQ
+            query: HGET node:rc_synq_client:values uploads_failed
+            type: counter
+
+        node_rc_synq_client_uploads_retried:
+            description: Number of retried uploads to SynQ
+            query: HGET node:rc_synq_client:values uploads_retried
+            type: counter
+
+
+        node_rc_aip_s3_mirror_downloads_successful:
+            description: Number of successful downloads
+            query: HGET node:pick_sensor/offboard/rc_aip_s3_mirror:values downloads_successful
+            type: counter
+
+        node_rc_aip_s3_mirror_downloads_failed:
+            description: Number of failed downloads
+            query: HGET node:pick_sensor/offboard/rc_aip_s3_mirror:values downloads_failed
+            type: counter
+
+        node_rc_aip_s3_mirror_downloads_retried:
+            description: Number of retried downloads
+            query: HGET node:pick_sensor/offboard/rc_aip_s3_mirror:values downloads_retried
+            type: counter
+
+        node_rc_aip_s3_mirror_uploads_successful:
+            description: Number of successful uploads
+            query: HGET node:pick_sensor/offboard/rc_aip_s3_mirror:values uploads_successful
+            type: counter
+
+        node_rc_aip_s3_mirror_uploads_failed:
+            description: Number of failed uploads
+            query: HGET node:pick_sensor/offboard/rc_aip_s3_mirror:values uploads_failed
+            type: counter
+
+        node_rc_aip_s3_mirror_uploads_retried:
+            description: Number of retried uploads
+            query: HGET node:pick_sensor/offboard/rc_aip_s3_mirror:values uploads_retried
+            type: counter
+
 
         node_pick_sensor_itempick_data_acquisition_time:
             description: Pick sensor Itempick data aquisition time in seconds
-            query: HGET node:pick_sensor/offboard/rc_itempick:values:values data_acquisition_time
+            query: HGET node:pick_sensor/offboard/rc_itempick:values data_acquisition_time
+
+        node_pick_sensor_itempick_load_carrier_detection_time:
+            description: Pick sensor Itempick load-carrier detection time in seconds
+            query: HGET node:pick_sensor/offboard/rc_itempick:values load_carrier_detection_time
 
         node_pick_sensor_itempick_grasp_computation_time:
             description: Pick sensor Itempick grasp computation time in seconds
-            query: HGET node:pick_sensor/offboard/rc_itempick:values:values grasp_computation_time
+            query: HGET node:pick_sensor/offboard/rc_itempick:values grasp_computation_time
 
+        node_place_sensor_itempick_data_acquisition_time:
+            description: Place sensor Itempick data aquisition time in seconds
+            query: HGET node:place_sensor/offboard/rc_itempick:values data_acquisition_time
+
+        node_place_sensor_itempick_load_carrier_detection_time:
+            description: Place sensor Itempick load-carrier detection time in seconds
+            query: HGET node:place_sensor/offboard/rc_itempick:values load_carrier_detection_time

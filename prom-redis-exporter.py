@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from __future__ import print_function
 
@@ -7,7 +7,7 @@ import sys
 import time
 import yaml
 from prometheus_client import start_http_server
-from prometheus_client.core import GaugeMetricFamily, REGISTRY
+from prometheus_client.core import CounterMetricFamily, GaugeMetricFamily, REGISTRY
 import logging
 import argparse
 
@@ -24,7 +24,7 @@ class RedisExporter(object):
                 logging.warning("skipping metric '{}' without query".format(metric_name))
                 continue
             # if connection is not given for a metric, use the "first" we find (not necessarily the first in yaml file)
-            conn = metric.get('connection', self.redisConnections.keys()[0])
+            conn = metric.get('connection', list(self.redisConnections)[0])
             try:
                 value = self.redisConnections[conn].execute_command(metric['query'])
             except redis.RedisError as e:
@@ -41,11 +41,21 @@ class RedisExporter(object):
                 logging.error("metric {}: Could not convert value '{}' to float".format(metric_name, value))
                 continue
 
-            yield GaugeMetricFamily(
-                metric.get('name', metric_name),
-                metric.get('description', ''),
-                value=value
-            )
+            metric_type = metric.get('type', 'gauge')
+            if metric_type == 'gauge':
+                yield GaugeMetricFamily(
+                    metric.get('name', metric_name),
+                    metric.get('description', ''),
+                    value=value
+                )
+            elif metric_type == 'counter':
+                yield CounterMetricFamily(
+                    metric.get('name', metric_name),
+                    metric.get('description', ''),
+                    value=value
+                )
+            else:
+                logging.error("metric {}: unknown type '{}'".format(metric_name, metric_type))
 
 
 def main():
@@ -57,7 +67,7 @@ def main():
 
     with open(args.query_file, 'r') as yaml_query:
         try:
-            query = yaml.load(yaml_query)['prometheus_redis']
+            query = yaml.load(yaml_query, Loader=yaml.FullLoader)['prometheus_redis']
         except yaml.YAMLError as e:
             logging.error(e)
             sys.exit(1)

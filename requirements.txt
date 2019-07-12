@@ -4,7 +4,6 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
-
-prometheus-client==0.3.1
-pyyaml==3.13
-redis==2.10.6
+prometheus-client==0.7.1
+pyyaml==5.1.1
+redis==3.2.1
