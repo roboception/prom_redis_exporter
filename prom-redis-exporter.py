@@ -76,7 +76,7 @@ class RedisExporter():
                     metric.get('description', ''),
                     labels=labels)
 
-            logging.debug("metric {}: queries: {}".format(metric_name, queries))
+            #logging.debug("metric {}: queries: {}".format(metric_name, queries))
             for q in queries:
                 value = get_value(q.get('query'))
                 if value is None:

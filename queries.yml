@@ -19,9 +19,9 @@ prometheus_redis:
                 - pipeline
             queries:
                 - label_values: pick_sensor
-                  query: HGET node:node:pick_sensor/rc_visard_driver__Connection:values connection_loss_total
+                  query: HGET node:pick_sensor/rc_visard_driver__Connection:values connection_loss_total
                 - label_values: place_sensor
-                  query: HGET node:node:place_sensor/rc_visard_driver__Connection:values connection_loss_total
+                  query: HGET node:place_sensor/rc_visard_driver__Connection:values connection_loss_total
 
         node_rc_visard_driver_incomplete_buffers_total:
             description: rc_visard_driver number of incomplete buffers
@@ -30,9 +30,9 @@ prometheus_redis:
                 - pipeline
             queries:
                 - label_values: pick_sensor
-                  query: HGET node:node:pick_sensor/rc_visard_driver__Connection:values incomplete_buffers_total
+                  query: HGET node:pick_sensor/rc_visard_driver__Connection:values incomplete_buffers_total
                 - label_values: place_sensor
-                  query: HGET node:node:place_sensor/rc_visard_driver__Connection:values incomplete_buffers_total
+                  query: HGET node:place_sensor/rc_visard_driver__Connection:values incomplete_buffers_total
 
         node_rc_visard_driver_image_receive_timeouts_total:
             description: rc_visard_driver number of image receive timeouts
@@ -41,25 +41,9 @@ prometheus_redis:
                 - pipeline
             queries:
                 - label_values: pick_sensor
-                  query: HGET node:node:pick_sensor/rc_visard_driver__Connection:values image_receive_timeouts_total
+                  query: HGET node:pick_sensor/rc_visard_driver__Connection:values image_receive_timeouts_total
                 - label_values: place_sensor
-                  query: HGET node:node:place_sensor/rc_visard_driver__Connection:values image_receive_timeouts_total
-
-
-        node_orientation_sensor_rc_visard_driver_connection_loss_total:
-            description: orientation sensor rc_visard_driver number of connections losses
-            query: HGET node:node:orientation_sensor/rc_visard_driver__Connection:values connection_loss_total
-            type: counter
-
-        node_orientation_sensor_rc_visard_driver_incomplete_buffers_total:
-            description: orientation sensor rc_visard_driver number of incomplete buffers
-            query: HGET node:node:orientation_sensor/rc_visard_driver__Connection:values incomplete_buffers_total
-            type: counter
-
-        node_orientation_sensor_rc_visard_driver_image_receive_timeouts_total:
-            description: orientation sensor rc_visard_driver number of image receive timeouts
-            query: HGET node:node:orientation_sensor/rc_visard_driver__Connection:values image_receive_timeouts_total
-            type: counter
+                  query: HGET node:place_sensor/rc_visard_driver__Connection:values image_receive_timeouts_total
 
 
         node_rc_synq_client_uploads_successful:
