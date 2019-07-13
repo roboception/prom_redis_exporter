@@ -12,50 +12,79 @@ import logging
 import argparse
 
 
-class RedisExporter(object):
-    def __init__(self, query, redisConnections):
-        self.query = query
+class RedisExporter():
+    def __init__(self, metrics, redisConnections):
+        self.metrics = metrics
         self.redisConnections = redisConnections
 
     def collect(self):
-        for metric_name in self.query['metrics']:
-            metric = self.query['metrics'][metric_name]
-            if 'query' not in metric:
-                logging.warning("skipping metric '{}' without query".format(metric_name))
-                continue
-            # if connection is not given for a metric, use the "first" we find (not necessarily the first in yaml file)
-            conn = metric.get('connection', list(self.redisConnections)[0])
-            try:
-                value = self.redisConnections[conn].execute_command(metric['query'])
-            except redis.RedisError as e:
-                logging.error(e)
-                continue
+        for metric_name in self.metrics:
+            metric = self.metrics[metric_name]
 
-            if value is None:
-                logging.debug("skipping metric '{}' as query '{}' returned nothing".format(metric_name, metric['query']))
-                continue
-
-            try:
-                value = float(value)
-            except TypeError:
-                logging.error("metric {}: Could not convert value '{}' to float".format(metric_name, value))
+            if 'query' not in metric and 'queries' not in metric:
+                logging.warning("skipping metric '{}' without queries".format(metric_name))
                 continue
 
             metric_type = metric.get('type', 'gauge')
             if metric_type == 'gauge':
-                yield GaugeMetricFamily(
-                    metric.get('name', metric_name),
-                    metric.get('description', ''),
-                    value=value
-                )
+                MetricFamily = GaugeMetricFamily
             elif metric_type == 'counter':
-                yield CounterMetricFamily(
-                    metric.get('name', metric_name),
-                    metric.get('description', ''),
-                    value=value
-                )
+                MetricFamily = CounterMetricFamily
             else:
                 logging.error("metric {}: unknown type '{}'".format(metric_name, metric_type))
+                continue
+
+            labels = metric.get('labels', None)
+            if labels is not None and not isinstance(labels, list):
+                logging.warning("skipping metric '{}': 'labels' is not a list".format(metric_name))
+                continue
+
+            queries = metric.get('queries', None)
+            if queries is None:
+                # support old single 'query' without labels
+                queries = [{'label_values': [], 'query': metric.get('query')}]
+            elif not isinstance(queries, list):
+                logging.warning("skipping metric '{}': 'queries' is not a list".format(metric_name))
+                continue
+            elif len(queries) == 0:
+                logging.warning("skipping metric '{}' without any queries".format(metric_name))
+                continue
+
+            # if connection is not given for a metric, use the "first" we find (not necessarily the first in yaml file)
+            conn = metric.get('connection', list(self.redisConnections)[0])
+
+            def get_value(query):
+                if query is None:
+                    return None
+                value = None
+                try:
+                    value = self.redisConnections[conn].execute_command(query)
+                except redis.RedisError as e:
+                    logging.error(e)
+                    return None
+                if value is None:
+                    logging.debug("skipping metric '{}' as query '{}' returned nothing".format(metric_name, query))
+                try:
+                    value = float(value)
+                except TypeError:
+                    logging.error("metric {}: Could not convert value '{}' to float".format(metric_name, value))
+                return value
+
+            m = MetricFamily(
+                    metric.get('name', metric_name),
+                    metric.get('description', ''),
+                    labels=labels)
+
+            for q in queries:
+                value = get_value(q.get('query'))
+                if value is None:
+                    continue
+                label_values = q.get('label_values', [])
+                if not isinstance(label_values, list):
+                    label_values = [label_values]
+                m.add_metric(label_values, value)
+
+            yield m
 
 
 def main():
@@ -82,7 +111,7 @@ def main():
             password=connParams.get('password', None)
         )
 
-    REGISTRY.register(RedisExporter(query, redisConnections))
+    REGISTRY.register(RedisExporter(query.get('metrics', {}), redisConnections))
     start_http_server(query.get('server', {}).get('port', 9118))
 
     while True:
