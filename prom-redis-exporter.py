@@ -12,6 +12,29 @@ import logging
 import argparse
 
 
+def create_logger(level=logging.INFO):
+    # create logger
+    logger = logging.getLogger(__name__)
+    logger.setLevel(level)
+
+    # create console handler and set level to debug
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+
+    # create formatter
+    formatter = logging.Formatter('[%(levelname)s] [%(created)f] [%(module)s]: %(message)s')
+
+    # add formatter to ch
+    ch.setFormatter(formatter)
+
+    # add ch to logger
+    logger.addHandler(ch)
+
+    return logger
+
+logger = create_logger()
+
+
 class RedisExporter():
     def __init__(self, metrics, redisConnections):
         self.metrics = metrics
@@ -22,7 +45,7 @@ class RedisExporter():
             metric = self.metrics[metric_name]
 
             if 'query' not in metric and 'queries' not in metric:
-                logging.warning("skipping metric '{}' without queries".format(metric_name))
+                logger.warning("skipping metric '{}' without queries".format(metric_name))
                 continue
 
             metric_type = metric.get('type', 'gauge')
@@ -31,12 +54,12 @@ class RedisExporter():
             elif metric_type == 'counter':
                 MetricFamily = CounterMetricFamily
             else:
-                logging.error("metric {}: unknown type '{}'".format(metric_name, metric_type))
+                logger.error("metric {}: unknown type '{}'".format(metric_name, metric_type))
                 continue
 
             labels = metric.get('labels', None)
             if labels is not None and not isinstance(labels, list):
-                logging.warning("skipping metric '{}': 'labels' is not a list".format(metric_name))
+                logger.warning("skipping metric '{}': 'labels' is not a list".format(metric_name))
                 continue
 
             queries = metric.get('queries', None)
@@ -44,10 +67,10 @@ class RedisExporter():
                 # support old single 'query' without labels
                 queries = [{'label_values': [], 'query': metric.get('query')}]
             elif not isinstance(queries, list):
-                logging.warning("skipping metric '{}': 'queries' is not a list".format(metric_name))
+                logger.warning("skipping metric '{}': 'queries' is not a list".format(metric_name))
                 continue
             elif len(queries) == 0:
-                logging.warning("skipping metric '{}' without any queries".format(metric_name))
+                logger.warning("skipping metric '{}' without any queries".format(metric_name))
                 continue
 
             # if connection is not given for a metric, use the "first" we find (not necessarily the first in yaml file)
@@ -60,15 +83,15 @@ class RedisExporter():
                 try:
                     value = self.redisConnections[conn].execute_command(query)
                 except redis.RedisError as e:
-                    logging.error(e)
+                    logger.error(e)
                     return None
                 if value is None:
-                    logging.debug("skipping metric '{}' as query '{}' returned nothing".format(metric_name, query))
+                    logger.debug("skipping metric '{}' as query '{}' returned nothing".format(metric_name, query))
                     return None
                 try:
                     value = float(value)
                 except TypeError:
-                    logging.error("metric {}: query '{}': Could not convert value '{}' to float".format(metric_name, query, value))
+                    logger.error("metric {}: query '{}': Could not convert value '{}' to float".format(metric_name, query, value))
                 return value
 
             m = MetricFamily(
@@ -76,7 +99,7 @@ class RedisExporter():
                     metric.get('description', ''),
                     labels=labels)
 
-            #logging.debug("metric {}: queries: {}".format(metric_name, queries))
+            #logger.debug("metric {}: queries: {}".format(metric_name, queries))
             for q in queries:
                 value = get_value(q.get('query'))
                 if value is None:
@@ -95,16 +118,14 @@ def main():
     parser.add_argument('-v', '--verbose', action="store_true", help="verbose logging (debug level)")
     args = parser.parse_args()
 
-    loglevel = logging.INFO
     if args.verbose:
-        loglevel= logging.DEBUG
-    logging.basicConfig(level=loglevel)
+        logger.setLevel(logging.DEBUG)
 
     with open(args.query_file, 'r') as yaml_query:
         try:
             query = yaml.load(yaml_query, Loader=yaml.FullLoader)['prometheus_redis']
         except yaml.YAMLError as e:
-            logging.error(e)
+            logger.error(e)
             sys.exit(1)
 
     redisConnections = {}
@@ -121,10 +142,13 @@ def main():
     port = query.get('server', {}).get('port', 9118)
     start_http_server(port)
 
-    logging.info("Started server on port {}".format(port))
+    logger.info("Started server on port {}".format(port))
 
     while True:
-        time.sleep(1)
+        try:
+            time.sleep(1)
+        except (KeyboardInterrupt, SystemExit):
+            logger.info("shutting down")
 
 
 if __name__ == "__main__":
