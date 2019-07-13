@@ -77,6 +77,7 @@ class RedisExporter():
                     labels=labels)
 
             for q in queries:
+                logger.debug("metric {}: query: {}".format(metric_name, query))
                 value = get_value(q.get('query'))
                 if value is None:
                     continue
@@ -84,8 +85,8 @@ class RedisExporter():
                 if not isinstance(label_values, list):
                     label_values = [label_values]
                 m.add_metric(label_values, value)
-
-            yield m
+            if m.samples:
+                yield m
 
 
 def main():
@@ -117,7 +118,10 @@ def main():
         )
 
     REGISTRY.register(RedisExporter(query.get('metrics', {}), redisConnections))
-    start_http_server(query.get('server', {}).get('port', 9118))
+    port = query.get('server', {}).get('port', 9118)
+    start_http_server(port)
+
+    logging.info("Started server on port {}".format(port))
 
     while True:
         time.sleep(1)
