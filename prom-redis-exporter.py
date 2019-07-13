@@ -64,10 +64,11 @@ class RedisExporter():
                     return None
                 if value is None:
                     logging.debug("skipping metric '{}' as query '{}' returned nothing".format(metric_name, query))
+                    return None
                 try:
                     value = float(value)
                 except TypeError:
-                    logging.error("metric {}: Could not convert value '{}' to float".format(metric_name, value))
+                    logging.error("metric {}: query '{}': Could not convert value '{}' to float".format(metric_name, query, value))
                 return value
 
             m = MetricFamily(
@@ -88,11 +89,15 @@ class RedisExporter():
 
 
 def main():
-    logging.basicConfig(level=logging.INFO)
-
     parser = argparse.ArgumentParser(description='Prometheus redis exporter')
     parser.add_argument('query_file', help="YAML file containing queries")
+    parser.add_argument('-v', '--verbose', action="store_true", help="verbose logging (debug level)")
     args = parser.parse_args()
+
+    loglevel = logging.INFO
+    if args.verbose:
+        loglevel= logging.DEBUG
+    logging.basicConfig(level=loglevel)
 
     with open(args.query_file, 'r') as yaml_query:
         try:
