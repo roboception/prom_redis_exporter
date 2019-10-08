@@ -1,0 +1,7 @@
+*.pyc
+
+.pytest_cache
+.tox
+.vscode
+venv
+dist
