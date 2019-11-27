@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+
+#export DH_VERBOSE=1
+export DH_VIRTUALENV_INSTALL_ROOT=/opt/rc
+
+SNAKE=/usr/bin/python3
+EXTRA_REQUIREMENTS=--preinstall "setuptools>=17.1" --preinstall "pip>=8" --preinstall "wheel"
+DH_VENV_ARGS=--setuptools --python $(SNAKE) $(EXTRA_REQUIREMENTS)
+
+%:
+	dh $@ --with python-virtualenv $(DH_VENV_ARGS)
+
+override_dh_virtualenv:
+	dh_virtualenv $(DH_VENV_ARGS) --python python3 --no-test

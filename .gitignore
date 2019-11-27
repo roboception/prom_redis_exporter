@@ -7,3 +7,9 @@
 
 venv
 dist
+
+debian/files
+debian/prom-redis-exporter.debhelper.log
+debian/prom-redis-exporter.postinst.debhelper
+debian/prom-redis-exporter.substvars
+debian/prom-redis-exporter/

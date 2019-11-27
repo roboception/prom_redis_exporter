@@ -7,6 +7,7 @@ variables:
 
 stages:
   - test
+  - deploy
   - image
 
 #############
@@ -27,6 +28,36 @@ stages:
   script:
     - pip3 install tox
     - tox
+
+# Debian packaging
+.package:
+  stage: deploy
+  script:
+    - export VERSION=$((git describe --match "v[0-9].[0-9]*" 2> /dev/null || echo "v0.0.0-$(git rev-list --count HEAD)-g$(git rev-parse --short HEAD)") | sed -r 's/v(.*)/\1/' | sed 's/-/+/g')-1~$DISTRO_CODENAME
+    - dpkg-checkbuilddeps
+    - dch --newversion $VERSION --controlmaint --distribution $DISTRO_CODENAME "$(git log -n1 --format="%s")"
+    - dpkg-buildpackage -us -uc
+    - if [ -z "$APT_REPO" ]; then export APT_REPO=testing; fi
+    - upload_deb.sh $DISTRO_CODENAME-$APT_REPO ../prom-redis-exporter_$VERSION*.deb
+    - rm -f ../prom-redis-exporter*$VERSION*
+
+.package_testing:
+  extends: .package
+  only:
+    - master
+  except:
+    - tags
+  variables:
+    APT_REPO: "testing"
+
+.package_stable:
+  extends: .package
+  only:
+    - /^v[0-9]+\.[0-9]+\.[0-9]+/
+  except:
+    - branches
+  variables:
+    APT_REPO: "stable"
 
 # Docker image
 .docker_build:
@@ -65,6 +96,18 @@ stages:
 #test_amd64:
 #  <<: *amd64_xenial_job
 #  <<: *test
+
+# Deploy testing (only on master)
+#################################
+package_testing:
+  <<: *amd64_bionic_job
+  extends: .package_testing
+
+# Deploy stable (only for releases, version tags)
+#################################################
+package_stable:
+  <<: *amd64_bionic_job
+  extends: .package_stable
 
 # Build and push as docker image
 ################################

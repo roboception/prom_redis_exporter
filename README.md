@@ -6,7 +6,7 @@ A service that exposes Prometheus metrics for Redis command results.
 ## Usage
 
 ```
-python prom-redis-exporter.py /path/to/queries.yml
+prom-redis-exporter /path/to/queries.yml
 ```
 
 An example of queries file is provided in queries.yml

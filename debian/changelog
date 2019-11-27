@@ -1,0 +1,5 @@
+prom-redis-exporter (0.3.0) unstable; urgency=medium
+
+  * Initial release.
+
+ -- Felix Ruess <felix.ruess@roboception.de>  Wed, 27 Nov 2019 12:29:20 +0100
