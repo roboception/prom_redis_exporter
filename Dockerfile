@@ -5,8 +5,8 @@ WORKDIR /workspace
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY prom-redis-exporter.py /usr/bin/
+COPY prom_redis_exporter/prom_redis_exporter.py /usr/bin/
 
 ENV PYTHONUNBUFFERED 1
 STOPSIGNAL SIGINT
-CMD ["prom-redis-exporter.py"]
+CMD ["prom_redis_exporter.py"]
