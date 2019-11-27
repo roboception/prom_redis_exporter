@@ -15,7 +15,7 @@ stages:
 #############
 
 .amd64_bionic_t: &amd64_bionic_job
-  image: ubuntu:bionic
+  image: registry.roboception.de/tools/docker_images:bionic-buildimage
   tags:
     - amd64
     - docker
