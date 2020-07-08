@@ -3,7 +3,8 @@ before_script:
   - apt-get update -yq && apt-get install -y debhelper devscripts git sed tar curl dh-virtualenv libparse-debcontrol-perl libdistro-info-perl libyaml-dev python3-dev python3-pip python3-setuptools
 
 variables:
-  GET_SOURCES_ATTEMPTS: 3
+  GET_SOURCES_ATTEMPTS: "3"
+  GIT_DEPTH: "0"
 
 stages:
   - test
@@ -18,6 +19,12 @@ stages:
   image: registry.roboception.de/tools/docker_images:bionic-buildimage
   tags:
     - amd64
+    - docker
+
+.armhf_bionic_t: &armhf_bionic_job
+  image: registry.roboception.de/tools/docker_images:armhf-bionic-buildimage
+  tags:
+    - armhf
     - docker
 
 #############
@@ -99,14 +106,22 @@ stages:
 
 # Deploy testing (only on master)
 #################################
-package_testing:
+package_testing:amd64:
   <<: *amd64_bionic_job
+  extends: .package_testing
+
+package_testing:armhf:
+  <<: *armhf_bionic_job
   extends: .package_testing
 
 # Deploy stable (only for releases, version tags)
 #################################################
-package_stable:
+package_stable:amd64:
   <<: *amd64_bionic_job
+  extends: .package_stable
+
+package_stable:armhf:
+  <<: *armhf_bionic_job
   extends: .package_stable
 
 # Build and push as docker image
