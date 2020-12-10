@@ -27,6 +27,18 @@ stages:
     - armhf
     - docker
 
+.amd64_focal_t: &amd64_focal_job
+  image: registry.roboception.de/tools/docker_images:focal-buildimage
+  tags:
+    - amd64
+    - docker
+
+.armhf_focal_t: &armhf_focal_job
+  image: registry.roboception.de/tools/docker_images:armhf-focal-buildimage
+  tags:
+    - armhf
+    - docker
+
 #############
 # Templates
 #############
@@ -106,22 +118,38 @@ stages:
 
 # Deploy testing (only on master)
 #################################
-package_testing:amd64:
+package_testing:amd64:bionic:
   <<: *amd64_bionic_job
   extends: .package_testing
 
-package_testing:armhf:
+package_testing:armhf:bionic:
   <<: *armhf_bionic_job
+  extends: .package_testing
+
+package_testing:amd64:focal:
+  <<: *amd64_focal_job
+  extends: .package_testing
+
+package_testing:armhf:focal:
+  <<: *armhf_focal_job
   extends: .package_testing
 
 # Deploy stable (only for releases, version tags)
 #################################################
-package_stable:amd64:
+package_stable:amd64:bionic:
   <<: *amd64_bionic_job
   extends: .package_stable
 
-package_stable:armhf:
+package_stable:armhf:bionic:
   <<: *armhf_bionic_job
+  extends: .package_stable
+
+package_stable:amd64:focal:
+  <<: *amd64_focal_job
+  extends: .package_stable
+
+package_stable:armhf:focal:
+  <<: *armhf_focal_job
   extends: .package_stable
 
 # Build and push as docker image
