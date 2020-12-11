@@ -2,7 +2,7 @@ Source: prom-redis-exporter
 Section: python
 Priority: extra
 Maintainer: Felix Ruess <felix.ruess@roboception.de>
-Build-Depends: debhelper (>= 9), python3, dh-virtualenv (>= 1.0), python3-dev, python3-setuptools, python3-pip
+Build-Depends: debhelper (>= 9), python3, dh-virtualenv (>= 1.0), python3-dev, python3-setuptools, python3-pip, python3-venv
 Standards-Version: 3.9.5
 
 Package: prom-redis-exporter
