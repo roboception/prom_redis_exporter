@@ -5,5 +5,5 @@
 #    pip-compile --output-file requirements.txt requirements.in
 #
 prometheus-client==0.7.1
-pyyaml==5.1.1
+pyyaml==5.4
 redis==3.2.1
