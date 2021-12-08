@@ -107,6 +107,8 @@ class RedisExporter():
                 label_values = q.get('label_values', [])
                 if not isinstance(label_values, list):
                     label_values = [label_values]
+                # ensure label values are strings
+                label_values = [str(l) for l in label_values]
                 m.add_metric(label_values, value)
             if m.samples:
                 yield m
