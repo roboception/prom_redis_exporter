@@ -15,11 +15,16 @@ stages:
 #############
 # Job anchors
 #############
-
 .amd64_bionic_t: &amd64_bionic_job
   image: registry.roboception.de/tools/docker_images:bionic-buildimage
   tags:
     - amd64
+    - docker
+
+.arm64_bionic_t: &arm64_bionic_job
+  image: registry.roboception.de/tools/docker_images:bionic-buildimage
+  tags:
+    - arm64
     - docker
 
 .armhf_bionic_t: &armhf_bionic_job
@@ -32,6 +37,12 @@ stages:
   image: registry.roboception.de/tools/docker_images:focal-buildimage
   tags:
     - amd64
+    - docker
+
+.arm64_focal_t: &arm64_focal_job
+  image: registry.roboception.de/tools/docker_images:focal-buildimage
+  tags:
+    - arm64
     - docker
 
 .armhf_focal_t: &armhf_focal_job
@@ -119,38 +130,54 @@ stages:
 
 # Deploy testing (only on master)
 #################################
-package_testing:amd64:bionic:
+package_testing:bionic:amd64:
   <<: *amd64_bionic_job
   extends: .package_testing
 
-package_testing:armhf:bionic:
+package_testing:bionic:armhf:
   <<: *armhf_bionic_job
   extends: .package_testing
 
-package_testing:amd64:focal:
+package_testing:bionic:arm64:
+  <<: *arm64_bionic_job
+  extends: .package_testing
+
+package_testing:focal:amd64:
   <<: *amd64_focal_job
   extends: .package_testing
 
-package_testing:armhf:focal:
+package_testing:focal:armhf:
   <<: *armhf_focal_job
+  extends: .package_testing
+
+package_testing:focal:arm64:
+  <<: *arm64_focal_job
   extends: .package_testing
 
 # Deploy stable (only for releases, version tags)
 #################################################
-package_stable:amd64:bionic:
+package_stable:bionic:amd64:
   <<: *amd64_bionic_job
   extends: .package_stable
 
-package_stable:armhf:bionic:
+package_stable:bionic:armhf:
   <<: *armhf_bionic_job
   extends: .package_stable
 
-package_stable:amd64:focal:
+package_stable:bionic:arm64:
+  <<: *arm64_bionic_job
+  extends: .package_stable
+
+package_stable:focal:amd64:
   <<: *amd64_focal_job
   extends: .package_stable
 
-package_stable:armhf:focal:
+package_stable:focal:armhf:
   <<: *armhf_focal_job
+  extends: .package_stable
+
+package_stable:focal:arm64:
+  <<: *arm64_focal_job
   extends: .package_stable
 
 # Build and push as docker image
