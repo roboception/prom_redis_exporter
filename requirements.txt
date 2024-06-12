@@ -4,6 +4,7 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
+async-timeout==4.0.2
 prometheus-client==0.7.1
 pyyaml==5.4
-redis==3.2.1
+redis==4.5.4
