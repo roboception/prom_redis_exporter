@@ -10,4 +10,4 @@ DH_VENV_ARGS=--python python3 --builtin-venv $(EXTRA_REQUIREMENTS)
 	dh $@ --with python-virtualenv
 
 override_dh_virtualenv:
-	dh_virtualenv $(DH_VENV_ARGS) --no-test
+	dh_virtualenv $(DH_VENV_ARGS)
