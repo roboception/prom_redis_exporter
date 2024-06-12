@@ -15,24 +15,6 @@ stages:
 #############
 # Job anchors
 #############
-.amd64_bionic_t: &amd64_bionic_job
-  image: registry.roboception.de/tools/docker_images:bionic-buildimage
-  tags:
-    - amd64
-    - docker
-
-.arm64_bionic_t: &arm64_bionic_job
-  image: registry.roboception.de/tools/docker_images:bionic-buildimage
-  tags:
-    - arm64
-    - docker
-
-.armhf_bionic_t: &armhf_bionic_job
-  image: registry.roboception.de/tools/docker_images:armhf-bionic-buildimage
-  tags:
-    - armhf
-    - docker
-
 .amd64_focal_t: &amd64_focal_job
   image: registry.roboception.de/tools/docker_images:focal-buildimage
   tags:
@@ -47,6 +29,24 @@ stages:
 
 .armhf_focal_t: &armhf_focal_job
   image: registry.roboception.de/tools/docker_images:armhf-focal-buildimage
+  tags:
+    - armhf
+    - docker
+
+.amd64_jammy_t: &amd64_jammy_job
+  image: registry.roboception.de/tools/docker_images:jammy-buildimage
+  tags:
+    - amd64
+    - docker
+
+.arm64_jammy_t: &arm64_jammy_job
+  image: registry.roboception.de/tools/docker_images:jammy-buildimage
+  tags:
+    - arm64
+    - docker
+
+.armhf_jammy_t: &armhf_jammy_job
+  image: registry.roboception.de/tools/docker_images:armhf-jammy-buildimage
   tags:
     - armhf
     - docker
@@ -124,24 +124,9 @@ stages:
 ##############
 # Jobs
 ##############
-#test_amd64:
-#  <<: *amd64_xenial_job
-#  <<: *test
 
 # Deploy testing (only on master)
 #################################
-package_testing:bionic:amd64:
-  <<: *amd64_bionic_job
-  extends: .package_testing
-
-package_testing:bionic:armhf:
-  <<: *armhf_bionic_job
-  extends: .package_testing
-
-package_testing:bionic:arm64:
-  <<: *arm64_bionic_job
-  extends: .package_testing
-
 package_testing:focal:amd64:
   <<: *amd64_focal_job
   extends: .package_testing
@@ -154,20 +139,20 @@ package_testing:focal:arm64:
   <<: *arm64_focal_job
   extends: .package_testing
 
+package_testing:jammy:amd64:
+  <<: *amd64_jammy_job
+  extends: .package_testing
+
+package_testing:jammy:arm64:
+  <<: *arm64_jammy_job
+  extends: .package_testing
+
+package_testing:jammy:armhf:
+  <<: *armhf_jammy_job
+  extends: .package_testing
+
 # Deploy stable (only for releases, version tags)
 #################################################
-package_stable:bionic:amd64:
-  <<: *amd64_bionic_job
-  extends: .package_stable
-
-package_stable:bionic:armhf:
-  <<: *armhf_bionic_job
-  extends: .package_stable
-
-package_stable:bionic:arm64:
-  <<: *arm64_bionic_job
-  extends: .package_stable
-
 package_stable:focal:amd64:
   <<: *amd64_focal_job
   extends: .package_stable
@@ -178,6 +163,18 @@ package_stable:focal:armhf:
 
 package_stable:focal:arm64:
   <<: *arm64_focal_job
+  extends: .package_stable
+
+package_stable:jammy:amd64:
+  <<: *amd64_jammy_job
+  extends: .package_stable
+
+package_stable:jammy:arm64:
+  <<: *arm64_jammy_job
+  extends: .package_stable
+
+package_stable:jammy:armhf:
+  <<: *armhf_jammy_job
   extends: .package_stable
 
 # Build and push as docker image
