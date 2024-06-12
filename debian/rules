@@ -1,13 +1,7 @@
 #!/usr/bin/make -f
 
 #export DH_VERBOSE=1
-export DH_VIRTUALENV_INSTALL_ROOT=/opt/rc
-
-EXTRA_REQUIREMENTS=--preinstall "setuptools>=17.1" --preinstall "pip>=8" --preinstall "wheel"
-DH_VENV_ARGS=--python python3 --builtin-venv $(EXTRA_REQUIREMENTS)
+export PYBUILD_NAME=prom-redis-exporter
 
 %:
-	dh $@ --with python-virtualenv
-
-override_dh_virtualenv:
-	dh_virtualenv $(DH_VENV_ARGS)
+	dh $@ --with python3 --buildsystem=pybuild
